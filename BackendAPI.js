@@ -15,6 +15,8 @@ app.use((req, res, next) => {
     next();
 });
 
+const mysql = require("mysql");
+
 const db = mysql.createConnection({
   host: "sql201.infinityfree.com",
   user: "if0_41390102",

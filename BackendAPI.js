@@ -16,12 +16,11 @@ app.use((req, res, next) => {
 });
 
 const db = mysql.createConnection({
-    host: process.env.MYSQLHOST,
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-    port: process.env.MYSQLPORT
-  });
+  host: "sql201.infinityfree.com",
+  user: "if0_41390102",
+  password: "nuAAHUs7bx",
+  database: "if0_41390102_jewellery"
+});
 
 db.connect((err) => {
     if (err) {

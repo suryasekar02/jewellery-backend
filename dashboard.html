@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Jewellery App</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>Jewellery Admin</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#dashboard" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="#advanced_search"><i class="fas fa-search"></i> Advanced Search</a></li>
+
+            <li class="menu-header">Master Data</li>
+            <li><a href="#dse"><i class="fas fa-user-tie"></i> DSE/Executives</a></li>
+            <li><a href="#retailers"><i class="fas fa-store"></i> Retailers</a></li>
+            <li><a href="#parties"><i class="fas fa-handshake"></i> Parties</a></li>
+            <li><a href="#items"><i class="fas fa-ring"></i> Items</a></li>
+            <li><a href="#categories"><i class="fas fa-tags"></i> Categories</a></li>
+            <li><a href="#users"><i class="fas fa-users"></i> Users</a></li>
+
+            <li class="menu-header">Transactions</li>
+            <li><a href="#sales"><i class="fas fa-shopping-cart"></i> Sales</a></li>
+            <li><a href="#stock"><i class="fas fa-boxes"></i> Stock</a></li>
+            <li><a href="#inventory"><i class="fas fa-warehouse"></i> Inventory</a></li>
+            <li><a href="#purchases"><i class="fas fa-truck-loading"></i> Purchases</a></li>
+            <li><a href="#puremc"><i class="fas fa-gem"></i> Pure MC</a></li>
+
+            <li class="menu-header">Finance</li>
+            <li><a href="#payments"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+            <li><a href="#retailer_payments"><i class="fas fa-file-invoice-dollar"></i> Retailer Pay</a></li>
+            <li><a href="#expenses"><i class="fas fa-receipt"></i> Expenses</a></li>
+            <li><a href="#petrol"><i class="fas fa-gas-pump"></i> Petrol</a></li>
+
+            <li class="menu-header">System</li>
+            <li><a href="#trash"><i class="fas fa-trash-alt"></i> Trash</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h2>Welcome, <span id="adminName">Admin</span></h2>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Sales Value</h3>
+                    <div class="value" id="stat-total-sales">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Orders</h3>
+                    <div class="value" id="stat-total-orders">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="value" id="stat-total-users">-</div>
+                </div>
+            </div>
+            <!-- Quick Links or Charts could go here -->
+        </div>
+
+        <!-- Advanced Search Section -->
+        <div id="advanced_search-section" class="section-content d-none">
+            <h3>Advanced Search</h3>
+            <div class="search-container">
+                <form id="searchForm" class="search-form">
+                    <div class="form-group">
+                        <label>Transaction Type</label>
+                        <select id="searchType" required>
+                            <option value="sales">Sales</option>
+                            <option value="payment">Payments (DSE)</option>
+                            <option value="retailer_payment">Retailer Payments</option>
+                            <option value="stock">Stock</option>
+                            <option value="inventory">Inventory</option>
+                            <option value="purchase">Purchase</option>
+                            <option value="puremc">Pure MC</option>
+                            <option value="expenses">Expenses</option>
+                            <option value="petrol">Petrol Expenses</option>
+                        </select>
+                    </div>
+
+                    <div class="search-filters-grid">
+                        <div class="form-group" id="filter-date-from">
+                            <label>From Date</label>
+                            <input type="date" id="searchDateFrom">
+                        </div>
+                        <div class="form-group" id="filter-date-to">
+                            <label>To Date</label>
+                            <input type="date" id="searchDateTo">
+                        </div>
+                        <!-- DSE Filter -->
+                        <div class="form-group" id="filter-dse-group">
+                            <label>DSE Name</label>
+                            <input type="text" id="searchDse" placeholder="Search DSE..." list="dseList">
+                            <datalist id="dseList"></datalist>
+                        </div>
+                        <!-- Retailer Filter -->
+                        <div class="form-group" id="filter-retailer-group">
+                            <label>Retailer Name</label>
+                            <input type="text" id="searchRetailer" placeholder="Search Retailer..." list="retailerList">
+                            <datalist id="retailerList"></datalist>
+                        </div>
+                        <!-- Party Filter (for Purchase) -->
+                        <div class="form-group" id="filter-party-group" style="display: none;">
+                            <label>Party Name</label>
+                            <input type="text" id="searchParty" placeholder="Search Party..." list="partyList">
+                            <datalist id="partyList"></datalist>
+                        </div>
+                        <!-- Amount Range -->
+                        <div class="form-group" id="filter-amount-min">
+                            <label>Min Amount</label>
+                            <input type="number" id="searchAmountMin" placeholder="0">
+                        </div>
+                        <div class="form-group" id="filter-amount-max">
+                            <label>Max Amount</label>
+                            <input type="number" id="searchAmountMax" placeholder="No Limit">
+                        </div>
+                        <!-- Item Name Filter -->
+                        <div class="form-group" id="filter-item-name">
+                            <label>Item Name</label>
+                            <input type="text" id="searchItemName" placeholder="Search Item..." list="itemList">
+                            <datalist id="itemList"></datalist>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-search"></i> Search</button>
+                        <button type="button" id="clearSearchBtn" class="btn-secondary">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="search-results-container" class="data-table-container">
+                <p class="text-muted">Select filters and search to see results.</p>
+            </div>
+            <div class="section-actions mt-3">
+                <button onclick="exportToExcel('search')" class="export-btn btn-success d-none" id="export-search-btn">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Generic Template for similar sections -->
+
+        <!-- Master Data -->
+        <div id="dse-section" class="section-content d-none">
+            <h3>DSE Records</h3>
+            <div class="section-header-actions">
+                <button onclick="loadGeneric('view_dse', 'dse-data', ['did', 'dsename', 'mobile', 'email', 'totalbal'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_dse')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i>
+                    Export</button>
+            </div>
+            <div id="dse-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="retailers-section" class="section-content d-none">
+            <h3>Retailers</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_retailer', 'retailers-data', ['rid', 'dsename', 'retailername', 'mobile', 'location', 'openbalance'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_retailer')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="retailers-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="parties-section" class="section-content d-none">
+            <h3>Parties</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_parties', 'parties-data', ['pid', 'partyname', 'mobile', 'pure', 'makecharge'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_parties')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="parties-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="items-section" class="section-content d-none">
+            <h3>Items</h3>
+            <div class="section-header-actions">
+                <button onclick="loadGeneric('view_item', 'items-data', ['iid', 'itemName', 'category', 'coverWeight'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_item')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="items-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="categories-section" class="section-content d-none">
+            <h3>Categories</h3>
+            <div class="section-header-actions">
+                <button onclick="loadGeneric('view_category', 'categories-data', ['cid', 'categoryname'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_category')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="categories-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="users-section" class="section-content d-none">
+            <h3>Users</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_users', 'users-data', ['userid', 'username', 'loginname', 'mobile', 'Role'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_users')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="users-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <!-- Transactions -->
+        <div id="sales-section" class="section-content d-none">
+            <h3>Sales Records</h3>
+            <div class="section-header-actions">
+                <button onclick="loadTransactions('sales')" class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('sales')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="sales-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="stock-section" class="section-content d-none">
+            <h3>Stock Records</h3>
+            <div class="section-header-actions">
+                <button onclick="loadTransactions('stock')" class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('stock')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="stock-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="inventory-section" class="section-content d-none">
+            <h3>Inventory Records</h3>
+            <div class="section-header-actions">
+                <button onclick="loadTransactions('inventory')" class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('inventory')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="inventory-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="purchases-section" class="section-content d-none">
+            <h3>Purchases</h3>
+            <div class="section-header-actions">
+                <button onclick="loadTransactions('purchase')" class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('purchase')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="purchases-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="puremc-section" class="section-content d-none">
+            <h3>Pure MC</h3>
+            <div class="section-header-actions">
+                <button onclick="loadTransactions('puremc')" class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('puremc')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="puremc-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <!-- Finance -->
+        <div id="payments-section" class="section-content d-none">
+            <h3>Payments Received (DSE)</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_payment', 'payments-data', ['payid', 'date', 'dsename', 'amount', 'mode', 'description'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_payment')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="payments-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="retailer_payments-section" class="section-content d-none">
+            <h3>Retailer Payments</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_retailer_payment', 'retailer_payments-data', ['payid', 'date', 'dsename', 'retailername', 'amount', 'mode'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_retailer_payment')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="retailer_payments-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="expenses-section" class="section-content d-none">
+            <h3>General Expenses</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_expense', 'expenses-data', ['exid', 'date', 'particulars', 'paymode', 'amount', 'pure', 'description'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_expense')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="expenses-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <div id="petrol-section" class="section-content d-none">
+            <h3>Petrol Expenses</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_petrol', 'petrol-data', ['petid', 'date', 'dsename', 'amount', 'description'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_petrol')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="petrol-data" class="data-table-container">Loading...</div>
+        </div>
+
+        <!-- System -->
+        <div id="trash-section" class="section-content d-none">
+            <h3>Deleted Records (Trash)</h3>
+            <div class="section-header-actions">
+                <button
+                    onclick="loadGeneric('view_trash', 'trash-data', ['trashId', 'tableName', 'deletedAt', 'deletedBy', 'field1', 'field2'])"
+                    class="refresh-btn">Refresh</button>
+                <button onclick="exportToExcel('view_trash')" class="export-btn btn-success"><i
+                        class="fas fa-file-excel"></i> Export</button>
+            </div>
+            <div id="trash-data" class="data-table-container">Loading...</div>
+        </div>
+
+
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

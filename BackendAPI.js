@@ -95,7 +95,7 @@ app.post('/add_user', (req, res) => {
                 password: req.body.password,
                 mobile: req.body.mobile,
                 email: req.body.email,
-                Role: 'User' // Default Role required by schema
+                Role: 'user' // Default Role required by schema
             };
             let sql = 'INSERT INTO user SET ?';
             db.query(sql, user, (err, result) => {
@@ -104,7 +104,7 @@ app.post('/add_user', (req, res) => {
                     res.status(500).send('Error inserting user: ' + err.message);
                     return;
                 }
-                res.send('User added successfully');
+                res.send('user added successfully');
             });
         });
     });
@@ -112,7 +112,7 @@ app.post('/add_user', (req, res) => {
 
 
 app.get('/view_users', (req, res) => {
-    let sql = 'SELECT * FROM User';
+    let sql = 'SELECT * FROM user';
     db.query(sql, (err, results) => {
         if (err) {
             console.error(err);
@@ -131,7 +131,7 @@ app.post('/update_password', (req, res) => {
         return res.status(400).send('Missing loginname or password');
     }
 
-    let sql = 'UPDATE User SET password = ? WHERE loginname = ?';
+    let sql = 'UPDATE user SET password = ? WHERE loginname = ?';
     db.query(sql, [newPassword, loginName], (err, result) => {
         if (err) {
             console.error(err);
@@ -139,7 +139,7 @@ app.post('/update_password', (req, res) => {
             return;
         }
         if (result.affectedRows === 0) {
-            res.status(404).send('User not found');
+            res.status(404).send('user not found');
             return;
         }
         res.send('Password updated successfully');
@@ -157,7 +157,7 @@ app.post('/login', (req, res) => {
         return res.status(400).send('Login name and password are required');
     }
 
-    let sql = 'SELECT * FROM User WHERE loginname = ? AND password = ?';
+    let sql = 'SELECT * FROM user WHERE loginname = ? AND password = ?';
     db.query(sql, [loginname, password], (err, results) => {
         if (err) {
             console.error("Database error during login:", err);
@@ -187,7 +187,7 @@ const ID_CONFIG = {
     'petrol': { table: 'petrolexpenses', column: 'petid', prefix: 'F' },
     'partypayout': { table: 'partypayout', column: 'parid', prefix: 'PAR' },
     'dse': { table: 'dse', column: 'did', prefix: 'D' },
-    'User': { table: 'User', column: 'userid', prefix: 'USR' }
+    'user': { table: 'user', column: 'userid', prefix: 'USR' }
 };
 
 // Generic Endpoint for Next ID
@@ -2447,13 +2447,13 @@ app.post('/search_transactions', (req, res) => {
         params.push(`%${filters.party}%`);
     }
 
-    // User ID Filter (Global if transmitted)
+    // user ID Filter (Global if transmitted)
     if (filters.userid) {
         // Check if table has userid column (most do based on schema)
         // Schema check: sales(yes), retailerpayment(yes), petrolexpenses(yes), puremc(yes)
         // others might not.
-        const tablesWithUser = ['sales', 'retailerpayment', 'petrolexpenses', 'puremc'];
-        if (tablesWithUser.includes(type)) {
+        const tablesWithuser = ['sales', 'retailerpayment', 'petrolexpenses', 'puremc'];
+        if (tablesWithuser.includes(type)) {
             whereClauses.push(`${config.alias}.userid = ?`);
             params.push(filters.userid);
         }

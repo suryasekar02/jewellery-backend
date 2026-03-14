@@ -1,5 +1,5 @@
 //const API_URL = 'http://51.20.73.184:3000';
-const API_URL = 'http://192.168.0.5:3000/';
+const API_URL = 'https://jewellery-backend-3-pinu.onrender.com';
 let lastData = {}; // Store last fetched data for export
 
 function exportToExcel(type) {

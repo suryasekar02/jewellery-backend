@@ -14,9 +14,7 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] Received request: ${req.method} ${req.url}`);
     next();
 });
-const express = require("express");
-const mysql = require("mysql");
-const app = express(); 
+
 const db = mysql.createConnection({
   host: "sql201.infinityfree.com",
   user: "if0_41390102",

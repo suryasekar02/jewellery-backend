@@ -3,7 +3,7 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -16,11 +16,11 @@ app.use((req, res, next) => {
 });
 
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT
+  host: "yamabiko.proxy.rlwy.net",
+  user: "root",
+  password: "hRirQGrleAlWWpWnThZottwHolrrGaJF",
+  database: "railway",
+  port: 38563
 });
 
 db.connect((err) => {
@@ -2650,6 +2650,6 @@ app.get('/get_autocomplete_data', (req, res) => {
     });
 });
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server started on port ${port} at 0.0.0.0`);
+app.listen(port, () => {
+  console.log("Server running on port " + port);
 });

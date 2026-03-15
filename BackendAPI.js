@@ -1367,73 +1367,98 @@ app.get('/get_last_puremc_id', (req, res) => {
 });
 
 app.post('/add_puremc', (req, res) => {
+
     db.beginTransaction((err) => {
+
         if (err) { throw err; }
 
-        let puremc = {
-            pureid: req.body.pureid,
-            date: req.body.date,
-            dsename: req.body.dsename,
-            retailername: req.body.retailername,
-            userid: req.body.userid // Add user ID
-        };
+        getNextId('puremc', 'pureid', 'PM', (err, nextId) => {
 
-        let sql = 'INSERT INTO puremc SET ?';
-        db.query(sql, puremc, (err, result) => {
             if (err) {
-                return db.rollback(() => {
-                    console.error(err);
-                    res.status(500).send('Error inserting puremc');
-                });
+                console.error(err);
+                return res.status(500).send('Error generating ID');
             }
 
-            let items = req.body.pureMcItems;
-            if (items && items.length > 0) {
-                // Mapping: pureid, item, weight, count, percent, mc
-                let sqlItems = 'INSERT INTO puremcitem (pureid, item, weight, count, percent, mc, pure, cover, totalwt, totalamount) VALUES ?';
-                let values = items.map(item => [
-                    req.body.pureid,
-                    item.item,
-                    item.weight,
-                    item.count,
-                    item.percent,
-                    item.mc,
-                    item.pure,
-                    item.cover,
-                    item.totalwt,
-                    item.totalamount
-                ]);
+            let puremc = {
+                pureid: nextId,
+                date: req.body.date,
+                dsename: req.body.dsename,
+                retailername: req.body.retailername,
+                userid: req.body.userid
+            };
 
-                db.query(sqlItems, [values], (err, result) => {
-                    if (err) {
-                        return db.rollback(() => {
-                            console.error(err);
-                            res.status(500).send('Error inserting puremc items');
-                        });
-                    }
-                    db.commit((err) => {
+            let sql = 'INSERT INTO puremc SET ?';
+
+            db.query(sql, puremc, (err, result) => {
+
+                if (err) {
+                    return db.rollback(() => {
+                        console.error(err);
+                        res.status(500).send('Error inserting puremc');
+                    });
+                }
+
+                let items = req.body.pureMcItems;
+
+                if (items && items.length > 0) {
+
+                    let sqlItems = 'INSERT INTO puremcitem (pureid, item, weight, count, percent, mc, pure, cover, totalwt, totalamount) VALUES ?';
+
+                    let values = items.map(item => [
+                        nextId,
+                        item.item,
+                        item.weight,
+                        item.count,
+                        item.percent,
+                        item.mc,
+                        item.pure,
+                        item.cover,
+                        item.totalwt,
+                        item.totalamount
+                    ]);
+
+                    db.query(sqlItems, [values], (err, result) => {
+
                         if (err) {
                             return db.rollback(() => {
-                                throw err;
+                                console.error(err);
+                                res.status(500).send('Error inserting puremc items');
                             });
                         }
-                        res.send('PureMc added successfully');
-                    });
-                });
-            } else {
-                db.commit((err) => {
-                    if (err) {
-                        return db.rollback(() => {
-                            throw err;
-                        });
-                    }
-                    res.send('PureMc added successfully');
-                });
-            }
-        });
-    });
-});
 
+                        db.commit((err) => {
+
+                            if (err) {
+                                return db.rollback(() => { throw err; });
+                            }
+
+                            res.send('PureMc added successfully');
+
+                        });
+
+                    });
+
+                } else {
+
+                    db.commit((err) => {
+
+                        if (err) {
+                            return db.rollback(() => { throw err; });
+                        }
+
+                        res.send('PureMc added successfully');
+
+                    });
+
+                }
+
+            });
+
+        });
+
+    });
+
+});
 app.get('/view_puremc', (req, res) => {
     let userid = req.query.userid;
     let sql = 'SELECT * FROM puremc';

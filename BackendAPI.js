@@ -426,7 +426,7 @@ app.post('/delete_retailer', (req, res) => {
         addToTrash('Retailer', 0, trashFields, 'API', db, (err) => {
             if (err) console.error("Error adding to Trash:", err);
 
-            let sql = 'DELETE FROM retailer WHERE retailername = ?';
+            let sql = 'DELETE FROM retailer WHERE rid = ?';
             db.query(sql, [retailername], (err, result) => {
                 if (err) {
                     console.error(err);

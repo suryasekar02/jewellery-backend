@@ -30,24 +30,46 @@ db.connect((err) => {
     console.log('MySQL connected...');
 });
 
-// Helper to generate next ID
+// Helper to generate next ID (FIXED VERSION)
 function getNextId(table, column, prefix, callback) {
-    // Sort by length first to handle D1, D2, D10 correctly
-    let sql = `SELECT ${column} FROM ${table} ORDER BY LENGTH(${column}) DESC, ${column} DESC LIMIT 1`;
+
+    // Only select IDs that start with the correct prefix
+    let sql = `
+        SELECT ${column} 
+        FROM ${table} 
+        WHERE ${column} LIKE '${prefix}%'
+        ORDER BY LENGTH(${column}) DESC, ${column} DESC 
+        LIMIT 1
+    `;
+
     db.query(sql, (err, results) => {
+
         if (err) return callback(err);
+
+        // If table is empty
         if (results.length === 0) {
             return callback(null, prefix + "1");
         }
-        let lastId = results[0][column]; // e.g., "D10"
-        if (!lastId) return callback(null, prefix + "1");
 
-        let numPart = lastId.replace(prefix, ""); // "10"
-        let nextNum = parseInt(numPart) + 1; // 11
-        callback(null, prefix + nextNum);
+        let lastId = results[0][column];
+
+        if (!lastId) {
+            return callback(null, prefix + "1");
+        }
+
+        // Extract number part
+        let numberPart = lastId.substring(prefix.length);
+
+        let number = parseInt(numberPart);
+
+        if (isNaN(number)) number = 0;
+
+        let nextId = prefix + (number + 1);
+
+        callback(null, nextId);
+
     });
 }
-
 
 app.post('/add_dse', (req, res) => {
     getNextId('dse', 'did', 'D', (err, nextId) => {

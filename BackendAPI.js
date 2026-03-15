@@ -33,12 +33,11 @@ db.connect((err) => {
 // Helper to generate next ID (FIXED VERSION)
 function getNextId(table, column, prefix, callback) {
 
-    // Only select IDs that start with the correct prefix
     let sql = `
         SELECT ${column} 
-        FROM ${table} 
+        FROM ${table}
         WHERE ${column} LIKE '${prefix}%'
-        ORDER BY LENGTH(${column}) DESC, ${column} DESC 
+        ORDER BY CAST(SUBSTRING(${column}, ${prefix.length + 1}) AS UNSIGNED) DESC
         LIMIT 1
     `;
 
@@ -46,23 +45,13 @@ function getNextId(table, column, prefix, callback) {
 
         if (err) return callback(err);
 
-        // If table is empty
         if (results.length === 0) {
             return callback(null, prefix + "1");
         }
 
         let lastId = results[0][column];
 
-        if (!lastId) {
-            return callback(null, prefix + "1");
-        }
-
-        // Extract number part
-        let numberPart = lastId.substring(prefix.length);
-
-        let number = parseInt(numberPart);
-
-        if (isNaN(number)) number = 0;
+        let number = parseInt(lastId.replace(prefix, '')) || 0;
 
         let nextId = prefix + (number + 1);
 
@@ -70,7 +59,6 @@ function getNextId(table, column, prefix, callback) {
 
     });
 }
-
 app.post('/add_dse', (req, res) => {
     getNextId('dse', 'did', 'D', (err, nextId) => {
         if (err) { console.error(err); res.status(500).send('Error generating ID'); return; }

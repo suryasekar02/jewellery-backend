@@ -2688,3 +2688,12 @@ app.get('/get_autocomplete_data', (req, res) => {
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
+
+app.post('/update_dse', (req, res) => {
+  const { did, mobile, email, openbalance, totalbal } = req.body;
+  const sql = 'UPDATE dse SET mobile=?, email=?, openbalance=?, totalbal=? WHERE did=?';
+  db.query(sql, [mobile, email, openbalance, totalbal, did], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: 'DSE updated successfully' });
+  });
+});

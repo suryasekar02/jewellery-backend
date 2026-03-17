@@ -380,8 +380,8 @@ app.post('/add_retailer', (req, res) => {
             mobile: req.body.mobile,
             location: req.body.location,
             district: req.body.district,
-            openbalance: req.body.openbalance,
-            openpure: req.body.openpure
+            openbalance: parseInt(req.body.openbalance) || 0,
+            openpure: parseFloat(req.body.openpure) || 0
         };
 
         let sql = 'INSERT INTO retailer SET ?';
@@ -468,8 +468,8 @@ app.post('/update_retailer', (req, res) => {
         mobile: req.body.mobile,
         location: req.body.location,
         district: req.body.district,
-        openbalance: req.body.openbalance,
-        openpure: req.body.openpure
+        openbalance: parseInt(req.body.openbalance) || 0,
+        openpure: parseFloat(req.body.openpure) || 0
     };
 
     let sql = 'UPDATE retailer SET ? WHERE rid = ?';
@@ -622,7 +622,7 @@ app.post('/add_sale', (req, res) => {
             invno: req.body.invno,
             date: req.body.date,
             dse: req.body.dse,
-            retailer: req.body.retailer,
+            rid: req.body.rid,
             discount: Number(req.body.discount) || 0,
             finaltotal: Number(req.body.finaltotal) || 0,
             userid: req.body.userid // Add user ID
@@ -651,50 +651,41 @@ app.post('/add_sale', (req, res) => {
                         });
                     }
 
-                    // Update Retailer Balance
-                    let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance + ? WHERE retailername = ?';
-                    db.query(sqlUpdateRetailer, [sale.finaltotal, sale.retailer], (err, result) => {
-                        if (err) {
-                            return db.rollback(() => {
-                                console.error(err);
-                                res.status(500).send('Error updating retailer balance');
-                            });
-                        }
+    // Convert to integer (IMPORTANT)
+let amount = Math.round(Number(sale.finaltotal) || 0);
 
-                        db.commit((err) => {
-                            if (err) {
-                                return db.rollback(() => {
-                                    throw err;
-                                });
-                            }
-                            res.send('Sale added successfully');
-                        });
-                    });
-                });
-            } else {
-                // Update Retailer Balance even if no items (though unlikely for a sale)
-                let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance + ? WHERE retailername = ?';
-                db.query(sqlUpdateRetailer, [sale.finaltotal, sale.retailer], (err, result) => {
-                    if (err) {
-                        return db.rollback(() => {
-                            console.error(err);
-                            res.status(500).send('Error updating retailer balance');
-                        });
-                    }
-                    db.commit((err) => {
-                        if (err) {
-                            return db.rollback(() => {
-                                throw err;
-                            });
-                        }
-                        res.send('Sale added successfully (no items)');
-                    });
-                });
-            }
+// Update Retailer Balance
+let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance + ? WHERE rid = ?';
+
+db.query(sqlUpdateRetailer, [amount, sale.rid], (err, result) => {
+
+    if (err) {
+        return db.rollback(() => {
+            console.error(err);
+            res.status(500).send('Error updating retailer balance');
         });
+    }
+
+    db.commit((err) => {
+
+        if (err) {
+            return db.rollback(() => {
+                throw err;
+            });
+        }
+
+        // keep your original responses
+        if (items && items.length > 0) {
+            res.send('Sale added successfully');
+        } else {
+            res.send('Sale added successfully (no items)');
+        }
+
     });
+
 });
 
+                    //
 app.get('/view_sales', (req, res) => {
     let userid = req.query.userid;
     let sql = 'SELECT * FROM sales';

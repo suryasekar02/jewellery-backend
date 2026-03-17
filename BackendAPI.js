@@ -367,7 +367,11 @@ app.post('/delete_category', (req, res) => {
 
 app.post('/add_retailer', (req, res) => {
     getNextId('retailer', 'rid', 'R', (err, nextId) => {
-        if (err) { console.error(err); res.status(500).send('Error generating ID'); return; }
+
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error generating ID');
+        }
 
         let retailer = {
             rid: nextId,
@@ -379,61 +383,83 @@ app.post('/add_retailer', (req, res) => {
             openbalance: req.body.openbalance,
             openpure: req.body.openpure
         };
+
         let sql = 'INSERT INTO retailer SET ?';
+
         db.query(sql, retailer, (err, result) => {
+
             if (err) {
                 console.error(err);
-                res.status(500).send('Error inserting retailer');
-                return;
+                return res.status(500).send('Error inserting retailer');
             }
-            res.send('Retailer added...');
+
+            res.send('Retailer added successfully');
+
         });
+
     });
 });
 
 app.post('/delete_retailer', (req, res) => {
-    let retailername = req.body.retailername;
-    db.query('SELECT * FROM retailer WHERE retailername = ?', [retailername], (err, results) => {
-        if (err) { console.error(err); res.status(500).send('Error finding retailer'); return; }
-        if (results.length === 0) { res.status(404).send('Retailer not found'); return; }
 
-        let item = results[0]; // Take first match
+    let rid = req.body.rid;
 
-        // Trash Fields
+    if (!rid) {
+        return res.status(400).send('Missing rid');
+    }
+
+    db.query('SELECT * FROM retailer WHERE rid = ?', [rid], (err, results) => {
+
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error finding retailer');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('Retailer not found');
+        }
+
+        let item = results[0];
+
         let trashFields = {
-            field1: item.dsename,
-            field2: item.retailername,
-            field3: item.mobile,
-            field4: item.location,
-            field5: item.district,
+            field1: item.rid,
+            field2: item.dsename,
+            field3: item.retailername,
+            field4: item.mobile,
+            field5: item.location,
             field6: String(item.openbalance),
             field7: String(item.openpure || 0)
         };
 
-        // Use retailername as ID for Trash record if real ID hidden
-        addToTrash('Retailer', 0, trashFields, 'API', db, (err) => {
+        addToTrash('Retailer', item.rid, trashFields, 'API', db, (err) => {
+
             if (err) console.error("Error adding to Trash:", err);
 
             let sql = 'DELETE FROM retailer WHERE rid = ?';
-            db.query(sql, [retailername], (err, result) => {
+
+            db.query(sql, [rid], (err, result) => {
+
                 if (err) {
                     console.error(err);
-                    res.status(500).send('Error deleting retailer');
-                    return;
+                    return res.status(500).send('Error deleting retailer');
                 }
+
                 res.send('Retailer deleted successfully');
+
             });
+
         });
+
     });
+
 });
 
-
 app.post('/update_retailer', (req, res) => {
-    let rid = req.body.rid;
-    let retailername = req.body.retailername;
 
-    if (!rid && !retailername) {
-        return res.status(400).send('Missing rid or retailername');
+    let rid = req.body.rid;
+
+    if (!rid) {
+        return res.status(400).send('Missing rid');
     }
 
     let retailer = {
@@ -446,45 +472,59 @@ app.post('/update_retailer', (req, res) => {
         openpure: req.body.openpure
     };
 
-    let sql = 'UPDATE retailer SET ? WHERE ' + (rid ? 'rid = ?' : 'retailername = ?');
-    let params = [retailer, rid || retailername];
+    let sql = 'UPDATE retailer SET ? WHERE rid = ?';
 
-    db.query(sql, params, (err, result) => {
+    db.query(sql, [retailer, rid], (err, result) => {
+
         if (err) {
             console.error(err);
-            res.status(500).send('Error updating retailer');
-            return;
+            return res.status(500).send('Error updating retailer');
         }
+
         res.send('Retailer updated successfully');
+
     });
+
 });
 
 app.get('/view_retailer', (req, res) => {
+
     let sql = 'SELECT * FROM retailer';
+
     db.query(sql, (err, results) => {
+
         if (err) {
             console.error(err);
-            res.status(500).send('Error fetching retailers');
-            return;
+            return res.status(500).send('Error fetching retailers');
         }
+
         res.json(results);
+
     });
+
 });
 
 app.get('/view_retailer_by_dse', (req, res) => {
+
     let dsename = req.query.dsename;
+
     if (!dsename) {
         return res.status(400).send('Missing dsename parameter');
     }
+
     let sql = 'SELECT * FROM retailer WHERE dsename = ?';
+
     db.query(sql, [dsename], (err, results) => {
+
         if (err) {
             console.error(err);
-            res.status(500).send('Error fetching retailers');
-            return;
+            return res.status(500).send('Error fetching retailers');
         }
+
         res.json(results);
+
     });
+
 });
 
 app.post('/add_item', (req, res) => {

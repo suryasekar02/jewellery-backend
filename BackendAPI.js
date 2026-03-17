@@ -2737,3 +2737,90 @@ app.post('/update_dse', (req, res) => {
     res.json({ message: 'DSE updated successfully' });
   });
 });
+
+// 17 march 
+
+comment existing /add_sale post code in BackendAPI use below code:
+app.post('/add_sale', (req, res) => {
+    db.beginTransaction((err) => {
+        if (err) { throw err; }
+
+        console.log("Receiving sale data:", req.body);
+
+        let sale = {
+            invno: req.body.invno,
+            date: req.body.date,
+            dse: req.body.dse,
+            retailer: req.body.retailer,
+            discount: Number(req.body.discount) || 0,
+            finaltotal: Number(req.body.finaltotal) || 0,
+            userid: req.body.userid
+        };
+
+        console.log("Mapped sale object for DB:", sale);
+
+        let sqlSale = `
+            INSERT INTO sales 
+            (invno, date, dse, retailer, discount, finaltotal, userid) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        db.query(sqlSale, 
+            [sale.invno, sale.date, sale.dse, sale.retailer, sale.discount, sale.finaltotal, sale.userid], 
+            (err, result) => {
+
+            if (err) {
+                return db.rollback(() => {
+                    console.error("Error inserting sale:", err);
+                    res.status(500).send('Error inserting sale: ' + err.message);
+                });
+            }
+
+            let items = req.body.saleItems;
+
+            if (items && items.length > 0) {
+                let sqlItems = `
+                    INSERT INTO salesitem 
+                    (invno, item, weight, count, rate, coverwt, total, totalweight) 
+                    VALUES ?
+                `;
+
+                let values = items.map(item => [
+                    req.body.invno,
+                    item.product,
+                    item.weight,
+                    item.count,
+                    item.rate,
+                    item.cover,
+                    item.total,
+                    item.totalweight
+                ]);
+
+                db.query(sqlItems, [values], (err, result) => {
+                    if (err) {
+                        return db.rollback(() => {
+                            console.error("Error inserting sale items:", err);
+                            res.status(500).send('Error inserting sale items');
+                        });
+                    }
+
+                    db.commit((err) => {
+                        if (err) {
+                            return db.rollback(() => { throw err; });
+                        }
+                        res.send('Sale added successfully');
+                    });
+                });
+
+            } else {
+                // No items case
+                db.commit((err) => {
+                    if (err) {
+                        return db.rollback(() => { throw err; });
+                    }
+                    res.send('Sale added successfully (no items)');
+                });
+            }
+        });
+    });
+});

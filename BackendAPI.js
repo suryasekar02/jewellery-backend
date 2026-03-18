@@ -2731,7 +2731,7 @@ app.post('/update_dse', (req, res) => {
 
 // 17 march 
 
-comment existing /add_sale post code in BackendAPI use below code:
+//comment existing /add_sale post code in BackendAPI use below code:
 app.post('/add_sale', (req, res) => {
     db.beginTransaction((err) => {
         if (err) { throw err; }

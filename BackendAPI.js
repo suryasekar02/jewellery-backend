@@ -2328,7 +2328,7 @@ app.post('/delete_petrol', (req, res) => {
 
 // Helper to add record to trash
 function addToTrash(tableName, recordId, fields, deletedBy, dbConnection, callback) {
-    let sql = 'INSERT INTO TrashTable (tableName, recordId, field1, field2, field3, field4, field5, field6, field7, deletedBy, deletedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())';
+    let sql = 'INSERT INTO trashtable (tableName, recordId, field1, field2, field3, field4, field5, field6, field7, deletedBy, deletedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())';
     let params = [
         tableName,
         recordId || 0,
@@ -2362,7 +2362,7 @@ app.get('/get_trash_tables', (req, res) => {
 
 app.get('/view_trash', (req, res) => {
     let tableName = req.query.tableName;
-    let sql = 'SELECT * FROM TrashTable';
+    let sql = 'SELECT * FROM trashtable';
     let params = [];
     if (tableName && tableName !== 'All Tables') {
         sql += ' WHERE tableName = ?';

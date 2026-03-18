@@ -2743,6 +2743,7 @@ app.post('/add_sale', (req, res) => {
             date: req.body.date,
             dse: req.body.dse,
             retailer: req.body.retailer,
+            rid: req.body.rid, 
             discount: Number(req.body.discount) || 0,
             finaltotal: Number(req.body.finaltotal) || 0,
             userid: req.body.userid

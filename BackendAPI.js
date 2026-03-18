@@ -712,8 +712,8 @@ app.post('/delete_sale', (req, res) => {
                 if (err) console.error("Error adding to Trash:", err);
 
                 // 2. Update Retailer Balance (Revert)
-                let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance - ? WHERE retailername = ?';
-                db.query(sqlUpdateRetailer, [sale.finaltotal || 0, sale.retailer], (err, result) => {
+                let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance - ? WHERE rid = ?';
+                db.query(sqlUpdateRetailer, [sale.finaltotal || 0, sale.rid], (err, result) => {
                     if (err) {
                         return db.rollback(() => {
                             console.error("Error reverting retailer balance on sale delete:", err);
@@ -1793,8 +1793,8 @@ app.post('/delete_retailer_payment', (req, res) => {
                 if (err) console.error("Error adding to Trash:", err);
 
                 // 2. Update Retailer Balance (Revert)
-                let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance + ? WHERE retailername = ?';
-                db.query(sqlUpdateRetailer, [item.amount, item.retailername], (err, result) => {
+                let sqlUpdateRetailer = 'UPDATE retailer SET openbalance = openbalance + ? WHERE rid = ?';
+                db.query(sqlUpdateRetailer, [item.amount, item.rid], (err, result) => {
                     if (err) {
                         return db.rollback(() => {
                             console.error("Error reverting retailer balance on payment delete:", err);
